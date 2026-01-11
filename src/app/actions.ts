@@ -18,10 +18,15 @@ export async function performFullAnalysis(
     }
 
     try {
-        // Ensure the data URI has the correct MIME type prefix
-        const correctedPhotoDataUri = photoDataUri.startsWith('data:image/jpeg;base64,')
-            ? photoDataUri
-            : `data:image/jpeg;base64,${photoDataUri.split(',')[1] || photoDataUri}`;
+        // Ensure the data URI is correctly formatted. It should be 'data:image/jpeg;base64,....'
+        // The error indicates we are sometimes just getting 'data:,' or similar.
+        // Let's grab only the base64 part.
+        const base64Data = photoDataUri.split(',')[1];
+        if (!base64Data) {
+            throw new Error("Invalid image data provided.");
+        }
+
+        const correctedPhotoDataUri = `data:image/jpeg;base64,${base64Data}`;
         
         const analysis = await analyzeScanData({ photoDataUri: correctedPhotoDataUri, scanDescription });
         
