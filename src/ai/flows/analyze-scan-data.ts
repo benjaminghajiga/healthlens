@@ -51,12 +51,20 @@ const analyzeScanDataPrompt = ai.definePrompt({
   name: 'analyzeScanDataPrompt',
   input: {schema: AnalyzeScanDataInputSchema},
   output: {schema: AnalyzeScanDataOutputSchema},
-  prompt: `You are an expert AI health analysis assistant. Your task is to analyze the provided scan data and description with exceptional precision to identify potential health indicators. You must correlate the information with extensive medical knowledge to provide a highly accurate, preliminary health assessment.
+  prompt: `You are an expert AI health analysis assistant. Your task is to analyze the provided scan data and description with exceptional precision to identify potential health indicators.
+
+**Analysis Steps:**
+1.  **Image Analysis:** Scrutinize the image for any visual anomalies, patterns, or characteristics relevant to health.
+2.  **Description Correlation:** Correlate your visual findings with the user-provided description.
+3.  **Indicator Identification:** Based on the combined analysis, identify potential health indicators.
+4.  **Confidence Scoring:** For each indicator, provide a confidence score from 0.0 to 1.0, reflecting your certainty.
+5.  **Detailed Explanation:** Provide a clear, detailed explanation for each indicator identified.
+6.  **Summary Generation:** Create a concise yet comprehensive summary of your findings.
+
+**IMPORTANT:** Your analysis is preliminary and based on visual data. It is not a medical diagnosis.
 
 Scan Description: {{{scanDescription}}}
 Scanned Image: {{media url=photoDataUri}}
-
-Based on a detailed analysis of the image and description, identify any potential health indicators. Provide a confidence level for each, ensuring the assessment is as accurate as possible. Finally, generate a concise yet comprehensive summary of your analysis.
 
 Output the health indicators as a JSON array, where each object has "indicator", "confidence", and optional "details" fields.
 `,

@@ -37,7 +37,15 @@ const correlateWithMedicalDbPrompt = ai.definePrompt({
   name: 'correlateWithMedicalDbPrompt',
   input: {schema: CorrelationInputSchema},
   output: {schema: CorrelationOutputSchema},
-  prompt: `You are a medical expert. Correlate the following AI analysis results with your knowledge and medical databases to provide relevant medical information. Be as detailed as possible.
+  prompt: `You are a medical research expert. Your task is to correlate the provided AI analysis with established medical knowledge.
+
+**Correlation Steps:**
+1.  **Review Analysis:** Carefully read the AI's analysis summary and identified indicators.
+2.  **Database Search:** Cross-reference the findings with your knowledge base of medical conditions, symptoms, and research.
+3.  **Synthesize Information:** Provide detailed, relevant medical information that helps contextualize the AI's findings. Explain what the indicators might suggest, list potential (not definitive) associated conditions, and describe common next steps.
+4.  **Emphasize Nuance:** Stress that correlation does not equal causation and that this information is for educational purposes only.
+
+**IMPORTANT:** Do not provide a diagnosis. Your role is to provide context and information, not medical advice.
 
 Analysis Results: {{{analysisResults}}}`,
 });
