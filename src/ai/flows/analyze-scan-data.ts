@@ -15,7 +15,8 @@ const AnalyzeScanDataInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      'A photo of the scanned area, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'    ),
+      'A photo of the scanned area, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
+    ),
   scanDescription: z
     .string()
     .describe('A description of the scan and any specific areas of concern.'),
@@ -50,12 +51,12 @@ const analyzeScanDataPrompt = ai.definePrompt({
   name: 'analyzeScanDataPrompt',
   input: {schema: AnalyzeScanDataInputSchema},
   output: {schema: AnalyzeScanDataOutputSchema},
-  prompt: `You are an AI health analysis assistant. Analyze the provided scan data and description to identify potential health indicators. Correlate the information with medical knowledge to provide a preliminary health assessment.
+  prompt: `You are an expert AI health analysis assistant. Your task is to analyze the provided scan data and description with exceptional precision to identify potential health indicators. You must correlate the information with extensive medical knowledge to provide a highly accurate, preliminary health assessment.
 
 Scan Description: {{{scanDescription}}}
 Scanned Image: {{media url=photoDataUri}}
 
-Based on the image and description, identify any potential health indicators and provide a confidence level for each. Provide a summary of your analysis.
+Based on a detailed analysis of the image and description, identify any potential health indicators. Provide a confidence level for each, ensuring the assessment is as accurate as possible. Finally, generate a concise yet comprehensive summary of your analysis.
 
 Output the health indicators as a JSON array, where each object has "indicator", "confidence", and optional "details" fields.
 `,
