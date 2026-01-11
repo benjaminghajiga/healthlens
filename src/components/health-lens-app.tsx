@@ -115,20 +115,32 @@ export function HealthLensApp() {
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    let photoDataUri = '';
+    try {
+        // Try to capture the image first.
+        photoDataUri = await captureImage();
+    } catch (captureError: any) {
+        console.error("Image capture failed on first attempt:", captureError.message);
+        try {
+            // If it fails, wait a moment and try again.
+            await new Promise(res => setTimeout(res, 500));
+            photoDataUri = await captureImage();
+        } catch (retryError: any) {
+            console.error("Image capture failed on retry:", retryError.message);
+            toast({
+                variant: 'destructive',
+                title: 'Capture Failed',
+                description: 'Could not capture image from camera. Please try again.',
+            });
+            return; // Stop execution if capture fails.
+        }
+    }
+
+    // If capture is successful, proceed with analysis.
     setAppState('analyzing');
     stopCamera();
 
     try {
-      // Add a small delay and retry logic for more robust capture
-      let photoDataUri = '';
-      try {
-        photoDataUri = await captureImage();
-      } catch (e) {
-        // Wait a moment and try again
-        await new Promise(res => setTimeout(res, 500));
-        photoDataUri = await captureImage();
-      }
-
       const result = await performFullAnalysis(photoDataUri, values.scanDescription);
       setAnalysisResult(result);
       setAppState('results');
