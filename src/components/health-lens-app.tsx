@@ -84,55 +84,50 @@ export function HealthLensApp() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!videoRef.current || !canvasRef.current) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Camera component not ready. Please try again.',
-      });
-      return;
+        setError('Camera components are not ready. Please try again.');
+        setAppState('error');
+        return;
     }
-  
+
+    const video = videoRef.current;
+    if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0 || video.videoHeight === 0) {
+        setError('Could not capture image from camera. The video stream may not be ready. Please try again.');
+        setAppState('error');
+        return;
+    }
+
     setAppState('analyzing');
     stopCamera();
-  
-    const video = videoRef.current;
+
     const canvas = canvasRef.current;
-  
-    // Ensure video has dimensions before capturing
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-      setError('Could not capture image from camera. Please try again.');
-      setAppState('error');
-      return;
-    }
-  
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const context = canvas.getContext('2d');
-  
+
     if (context) {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const photoDataUri = canvas.toDataURL('image/jpeg');
-  
-      if (!photoDataUri || photoDataUri === 'data:,') {
-        setError('Failed to capture image. Please try again.');
-        setAppState('error');
-        return;
-      }
-  
-      try {
-        const result = await performFullAnalysis(photoDataUri, values.scanDescription);
-        setAnalysisResult(result);
-        setAppState('results');
-      } catch (e: any) {
-        console.error('Analysis failed:', e);
-        setError(e.message || 'An unknown error occurred during analysis.');
-        setAppState('error');
-      }
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const photoDataUri = canvas.toDataURL('image/jpeg');
+
+        if (!photoDataUri || photoDataUri === 'data:,') {
+            setError('Failed to capture a valid image from the camera. Please try again.');
+            setAppState('error');
+            return;
+        }
+
+        try {
+            const result = await performFullAnalysis(photoDataUri, values.scanDescription);
+            setAnalysisResult(result);
+            setAppState('results');
+        } catch (e: any) {
+            console.error('Analysis failed:', e);
+            setError(e.message || 'An unknown error occurred during analysis.');
+            setAppState('error');
+        }
     } else {
-      setError('Could not process image. Please try again.');
-      setAppState('error');
+        setError('Could not process the captured image. Please try again.');
+        setAppState('error');
     }
-  };
+};
 
   const handleReset = () => {
     stopCamera();
