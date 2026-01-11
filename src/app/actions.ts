@@ -29,8 +29,8 @@ export async function performFullAnalysis(
         });
 
         return { analysis, correlation };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error in performFullAnalysis:", error);
-        throw new Error("Failed to perform full analysis. The AI model may be unavailable or experienced an issue. Please try again.");
+        throw new Error(error.message || "Failed to perform full analysis. The AI model may be unavailable or experienced an issue. Please try again.");
     }
 }
