@@ -84,52 +84,62 @@ export function HealthLensApp() {
 
   const captureImage = (): Promise<string> => {
     return new Promise((resolve, reject) => {
-      if (!videoRef.current || !canvasRef.current) {
-        return reject(new Error('Camera components are not ready.'));
-      }
       const video = videoRef.current;
       const canvas = canvasRef.current;
-
-      // Ensure video is ready
-      if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0 || video.videoHeight === 0) {
-        return reject(new Error('Could not capture image from camera. The video stream may not be ready.'));
-      }
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const context = canvas.getContext('2d');
-
-      if (!context) {
-        return reject(new Error('Could not process the captured image.'));
-      }
-
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const photoDataUri = canvas.toDataURL('image/jpeg');
-
-      if (!photoDataUri || photoDataUri === 'data:,') {
-        return reject(new Error('Failed to capture a valid image from the camera.'));
-      }
       
-      resolve(photoDataUri);
+      if (!video || !canvas) {
+          return reject(new Error('Camera components are not ready.'));
+      }
+  
+      const attemptCapture = (retries: number) => {
+        if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0) {
+          if (retries > 0) {
+            setTimeout(() => attemptCapture(retries - 1), 100);
+          } else {
+            reject(new Error('Could not capture image from camera. The video stream may not be ready.'));
+          }
+          return;
+        }
+  
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          return reject(new Error('Could not get canvas context.'));
+        }
+  
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const photoDataUri = canvas.toDataURL('image/jpeg');
+  
+        if (!photoDataUri || photoDataUri === 'data:,') {
+            if (retries > 0) {
+                setTimeout(() => attemptCapture(retries - 1), 100);
+            } else {
+                reject(new Error('Failed to capture a valid image from the camera.'));
+            }
+        } else {
+          resolve(photoDataUri);
+        }
+      };
+  
+      attemptCapture(2); // Try up to 3 times (initial + 2 retries)
     });
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     let photoDataUri = '';
     try {
-        // Try to capture the image first.
         photoDataUri = await captureImage();
     } catch (captureError: any) {
-        console.error("Image capture failed on first attempt:", captureError.message);
+        console.error("Image capture failed:", captureError.message);
         toast({
             variant: 'destructive',
             title: 'Capture Failed',
             description: captureError.message || 'Could not capture image from camera. Please try again.',
         });
-        return; // Stop execution if capture fails.
+        return;
     }
 
-    // If capture is successful, proceed with analysis.
     setAppState('analyzing');
     stopCamera();
 
@@ -294,7 +304,7 @@ export function HealthLensApp() {
                 </div>
               </CardHeader>
               <CardContent className="text-amber-800 dark:text-amber-300">
-                <p>HealthLens provides AI-generated information for educational purposes and is not a substitute for professional medical diagnosis or advice. Always consult with a professional health advisor for any health concerns.</p>
+                <p>For more enquiries consult with a professional health advisor</p>
               </CardContent>
             </Card>
             <div className="text-center">
