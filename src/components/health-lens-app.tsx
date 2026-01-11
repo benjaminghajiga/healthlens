@@ -121,19 +121,12 @@ export function HealthLensApp() {
         photoDataUri = await captureImage();
     } catch (captureError: any) {
         console.error("Image capture failed on first attempt:", captureError.message);
-        try {
-            // If it fails, wait a moment and try again.
-            await new Promise(res => setTimeout(res, 500));
-            photoDataUri = await captureImage();
-        } catch (retryError: any) {
-            console.error("Image capture failed on retry:", retryError.message);
-            toast({
-                variant: 'destructive',
-                title: 'Capture Failed',
-                description: 'Could not capture image from camera. Please try again.',
-            });
-            return; // Stop execution if capture fails.
-        }
+        toast({
+            variant: 'destructive',
+            title: 'Capture Failed',
+            description: captureError.message || 'Could not capture image from camera. Please try again.',
+        });
+        return; // Stop execution if capture fails.
     }
 
     // If capture is successful, proceed with analysis.
@@ -182,7 +175,7 @@ export function HealthLensApp() {
             <CardFooter className="flex-col gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-amber-500" />
-                    <p>For more enquiries consult with a health professional</p>
+                    <p>For more enquiries consult with a professional health advisor</p>
                 </div>
             </CardFooter>
           </Card>
@@ -301,7 +294,7 @@ export function HealthLensApp() {
                 </div>
               </CardHeader>
               <CardContent className="text-amber-800 dark:text-amber-300">
-                <p>HealthLens provides AI-generated information for educational purposes and is not a substitute for professional medical diagnosis or advice. Always consult with a qualified healthcare provider for any health concerns.</p>
+                <p>HealthLens provides AI-generated information for educational purposes and is not a substitute for professional medical diagnosis or advice. Always consult with a professional health advisor for any health concerns.</p>
               </CardContent>
             </Card>
             <div className="text-center">
