@@ -18,7 +18,12 @@ export async function performFullAnalysis(
     }
 
     try {
-        const analysis = await analyzeScanData({ photoDataUri, scanDescription });
+        // Ensure the data URI has the correct MIME type prefix
+        const correctedPhotoDataUri = photoDataUri.startsWith('data:image/jpeg;base64,')
+            ? photoDataUri
+            : `data:image/jpeg;base64,${photoDataUri.split(',')[1] || photoDataUri}`;
+        
+        const analysis = await analyzeScanData({ photoDataUri: correctedPhotoDataUri, scanDescription });
         
         if (!analysis || !analysis.summary) {
             throw new Error('AI analysis failed to produce a summary.');
