@@ -18,17 +18,7 @@ export async function performFullAnalysis(
     }
 
     try {
-        // Ensure the data URI is correctly formatted. It should be 'data:image/jpeg;base64,....'
-        // The error indicates we are sometimes just getting 'data:,' or similar.
-        // Let's grab only the base64 part.
-        const base64Data = photoDataUri.split(',')[1];
-        if (!base64Data) {
-            throw new Error("Invalid image data provided.");
-        }
-
-        const correctedPhotoDataUri = `data:image/jpeg;base64,${base64Data}`;
-        
-        const analysis = await analyzeScanData({ photoDataUri: correctedPhotoDataUri, scanDescription });
+        const analysis = await analyzeScanData({ photoDataUri, scanDescription });
         
         if (!analysis || !analysis.summary) {
             throw new Error('AI analysis failed to produce a summary.');
