@@ -82,52 +82,62 @@ export function HealthLensApp() {
     setAppState('scanning');
   };
 
+  const captureImage = (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      if (!videoRef.current || !canvasRef.current) {
+        return reject(new Error('Camera components are not ready.'));
+      }
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      // Ensure video is ready
+      if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0 || video.videoHeight === 0) {
+        return reject(new Error('Could not capture image from camera. The video stream may not be ready.'));
+      }
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+
+      if (!context) {
+        return reject(new Error('Could not process the captured image.'));
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const photoDataUri = canvas.toDataURL('image/jpeg');
+
+      if (!photoDataUri || photoDataUri === 'data:,') {
+        return reject(new Error('Failed to capture a valid image from the camera.'));
+      }
+      
+      resolve(photoDataUri);
+    });
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!videoRef.current || !canvasRef.current) {
-        setError('Camera components are not ready. Please try again.');
-        setAppState('error');
-        return;
-    }
-
-    const video = videoRef.current;
-    if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0 || video.videoHeight === 0) {
-        setError('Could not capture image from camera. The video stream may not be ready. Please try again.');
-        setAppState('error');
-        return;
-    }
-
     setAppState('analyzing');
     stopCamera();
 
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext('2d');
+    try {
+      // Add a small delay and retry logic for more robust capture
+      let photoDataUri = '';
+      try {
+        photoDataUri = await captureImage();
+      } catch (e) {
+        // Wait a moment and try again
+        await new Promise(res => setTimeout(res, 500));
+        photoDataUri = await captureImage();
+      }
 
-    if (context) {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const photoDataUri = canvas.toDataURL('image/jpeg');
-
-        if (!photoDataUri || photoDataUri === 'data:,') {
-            setError('Failed to capture a valid image from the camera. Please try again.');
-            setAppState('error');
-            return;
-        }
-
-        try {
-            const result = await performFullAnalysis(photoDataUri, values.scanDescription);
-            setAnalysisResult(result);
-            setAppState('results');
-        } catch (e: any) {
-            console.error('Analysis failed:', e);
-            setError(e.message || 'An unknown error occurred during analysis.');
-            setAppState('error');
-        }
-    } else {
-        setError('Could not process the captured image. Please try again.');
-        setAppState('error');
+      const result = await performFullAnalysis(photoDataUri, values.scanDescription);
+      setAnalysisResult(result);
+      setAppState('results');
+    } catch (e: any) {
+      console.error('Analysis failed:', e);
+      setError(e.message || 'An unknown error occurred during analysis.');
+      setAppState('error');
     }
-};
+  };
 
   const handleReset = () => {
     stopCamera();
