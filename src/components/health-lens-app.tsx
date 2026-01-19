@@ -84,12 +84,11 @@ export function HealthLensApp() {
 
   const captureImage = (): Promise<string> => {
     return new Promise((resolve, reject) => {
+      if (!videoRef.current || !canvasRef.current) {
+        return reject(new Error('Camera components are not ready.'));
+      }
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
-      if (!video || !canvas) {
-          return reject(new Error('Camera components are not ready.'));
-      }
   
       const attemptCapture = (retries: number) => {
         if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0) {
@@ -111,7 +110,7 @@ export function HealthLensApp() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const photoDataUri = canvas.toDataURL('image/jpeg');
   
-        if (!photoDataUri || photoDataUri === 'data:,') {
+        if (!photoDataUri || photoDataUri === 'data:,' || photoDataUri.length < 100) {
             if (retries > 0) {
                 setTimeout(() => attemptCapture(retries - 1), 100);
             } else {
@@ -139,7 +138,6 @@ export function HealthLensApp() {
         });
         return;
     }
-
     setAppState('analyzing');
     stopCamera();
 
@@ -304,7 +302,7 @@ export function HealthLensApp() {
                 </div>
               </CardHeader>
               <CardContent className="text-amber-800 dark:text-amber-300">
-                <p>HealthLens provides AI-generated information for educational purposes and is not a substitute for professional medical diagnosis or advice. Always consult with a qualified healthcare provider for any health concerns.</p>
+                <p>For more enquiries consult with a professional health advisor</p>
               </CardContent>
             </Card>
             <div className="text-center">
