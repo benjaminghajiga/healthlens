@@ -37,23 +37,6 @@ export function HealthLensApp() {
     defaultValues: { scanDescription: '' },
   });
 
-  const startCamera = useCallback(async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false,
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err) {
-      console.error('Camera access denied:', err);
-      setError('Camera access is required to perform a scan. Please enable camera permissions in your browser settings.');
-      setAppState('error');
-    }
-  }, []);
-
   const stopCamera = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
@@ -65,30 +48,41 @@ export function HealthLensApp() {
   }, [stream]);
 
   useEffect(() => {
-    if (appState === 'scanning' && !stream) {
-      startCamera();
-    } else if (appState !== 'scanning' && stream) {
-      stopCamera();
+    if (appState === 'scanning' && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
     }
-
+    
     return () => {
-      if (stream) {
-        stopCamera();
-      }
-    };
-  }, [appState, stream, startCamera, stopCamera]);
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    }
+  }, [appState, stream]);
 
-  const handleStartScan = () => {
-    setAppState('scanning');
+  const handleStartScan = async () => {
+    setError(null);
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false,
+      });
+      setStream(mediaStream);
+      setAppState('scanning');
+    } catch (err) {
+      console.error('Camera access denied:', err);
+      setError('Camera access is required to perform a scan. Please enable camera permissions in your browser settings.');
+      setAppState('error');
+    }
   };
 
   const captureImage = (): Promise<string> => {
     return new Promise((resolve, reject) => {
-      if (!videoRef.current || !canvasRef.current) {
-        return reject(new Error('Camera components are not ready.'));
-      }
       const video = videoRef.current;
       const canvas = canvasRef.current;
+      
+      if (!video || !canvas) {
+        return reject(new Error('Camera components are not ready.'));
+      }
   
       const attemptCapture = (retries: number) => {
         if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0) {
@@ -114,7 +108,7 @@ export function HealthLensApp() {
             if (retries > 0) {
                 setTimeout(() => attemptCapture(retries - 1), 100);
             } else {
-                reject(new Error('Failed to capture a valid image from the camera.'));
+                reject(new Error('Failed to capture a valid image from the camera. Please try again.'));
             }
         } else {
           resolve(photoDataUri);
