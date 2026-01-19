@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Camera, ScanLine, FileWarning, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Camera, ScanLine, FileWarning, RotateCcw, AlertTriangle, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,6 +29,7 @@ export function HealthLensApp() {
   const [error, setError] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraPermissionError, setCameraPermissionError] = useState(false);
+  const [isStartingScan, setIsStartingScan] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,6 +65,7 @@ export function HealthLensApp() {
   const handleStartScan = async () => {
     setError(null);
     setCameraPermissionError(false);
+    setIsStartingScan(true);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user' },
@@ -74,6 +76,7 @@ export function HealthLensApp() {
     } catch (err) {
       console.error('Camera access denied:', err);
       setCameraPermissionError(true);
+      setIsStartingScan(false);
     }
   };
 
@@ -175,21 +178,25 @@ export function HealthLensApp() {
             <CardContent className="space-y-4">
               {cameraPermissionError && (
                  <Alert>
-                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   <AlertTitle>Camera Access Denied</AlertTitle>
                   <AlertDescription>
                     Camera access is required to perform a scan. Please enable camera permissions in your browser settings.
                   </AlertDescription>
                 </Alert>
               )}
-              <Button size="lg" onClick={handleStartScan}>
-                <Camera className="mr-2 h-5 w-5" />
+              <Button size="lg" onClick={handleStartScan} disabled={isStartingScan}>
+                {isStartingScan ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Camera className="mr-2 h-5 w-5" />
+                )}
                 Start Scan
               </Button>
             </CardContent>
             <CardFooter className="flex-col gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                     <p>For more enquiries consult with a professional health advisor</p>
                 </div>
             </CardFooter>
