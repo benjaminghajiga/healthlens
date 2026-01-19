@@ -175,7 +175,7 @@ export function HealthLensApp() {
             <CardContent className="space-y-4">
               {cameraPermissionError && (
                  <Alert>
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Camera Access Denied</AlertTitle>
                   <AlertDescription>
                     Camera access is required to perform a scan. Please enable camera permissions in your browser settings.
@@ -189,7 +189,7 @@ export function HealthLensApp() {
             </CardContent>
             <CardFooter className="flex-col gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <AlertTriangle className="h-4 w-4" />
                     <p>For more enquiries consult with a professional health advisor</p>
                 </div>
             </CardFooter>
