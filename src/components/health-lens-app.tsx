@@ -304,7 +304,7 @@ export function HealthLensApp() {
                 </div>
               </CardHeader>
               <CardContent className="text-amber-800 dark:text-amber-300">
-                <p>For more enquiries consult with a professional health advisor</p>
+                <p>HealthLens provides AI-generated information for educational purposes and is not a substitute for professional medical diagnosis or advice. Always consult with a qualified healthcare provider for any health concerns.</p>
               </CardContent>
             </Card>
             <div className="text-center">
