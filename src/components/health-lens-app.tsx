@@ -70,8 +70,11 @@ export function HealthLensApp() {
       setAppState('scanning');
     } catch (err) {
       console.error('Camera access denied:', err);
-      setError('Camera access is required to perform a scan. Please enable camera permissions in your browser settings.');
-      setAppState('error');
+      toast({
+        variant: 'destructive',
+        title: 'Camera Access Denied',
+        description: 'Camera access is required to perform a scan. Please enable camera permissions in your browser settings.',
+      });
     }
   };
 
@@ -133,8 +136,8 @@ export function HealthLensApp() {
         return;
     }
     
-    stopCamera();
     setAppState('analyzing');
+    stopCamera();
 
     try {
       const result = await performFullAnalysis(photoDataUri, values.scanDescription);
