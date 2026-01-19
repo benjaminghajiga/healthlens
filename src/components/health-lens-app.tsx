@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from '@/components/ui/progress';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Logo } from '@/components/logo';
 import { performFullAnalysis, type FullAnalysisResult } from '@/app/actions';
 
@@ -27,6 +28,7 @@ export function HealthLensApp() {
   const [analysisResult, setAnalysisResult] = useState<FullAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [cameraPermissionError, setCameraPermissionError] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -61,6 +63,7 @@ export function HealthLensApp() {
 
   const handleStartScan = async () => {
     setError(null);
+    setCameraPermissionError(false);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user' },
@@ -70,11 +73,7 @@ export function HealthLensApp() {
       setAppState('scanning');
     } catch (err) {
       console.error('Camera access denied:', err);
-      toast({
-        variant: 'destructive',
-        title: 'Camera Access Denied',
-        description: 'Camera access is required to perform a scan. Please enable camera permissions in your browser settings.',
-      });
+      setCameraPermissionError(true);
     }
   };
 
@@ -136,8 +135,8 @@ export function HealthLensApp() {
         return;
     }
     
-    setAppState('analyzing');
     stopCamera();
+    setAppState('analyzing');
 
     try {
       const result = await performFullAnalysis(photoDataUri, values.scanDescription);
@@ -154,6 +153,7 @@ export function HealthLensApp() {
     stopCamera();
     setAnalysisResult(null);
     setError(null);
+    setCameraPermissionError(false);
     form.reset();
     setAppState('idle');
   };
@@ -172,7 +172,16 @@ export function HealthLensApp() {
                 Use your camera to scan for potential health indicators.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {cameraPermissionError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Camera Access Denied</AlertTitle>
+                  <AlertDescription>
+                    Camera access is required to perform a scan. Please enable camera permissions in your browser settings.
+                  </AlertDescription>
+                </Alert>
+              )}
               <Button size="lg" onClick={handleStartScan}>
                 <Camera className="mr-2 h-5 w-5" />
                 Start Scan
