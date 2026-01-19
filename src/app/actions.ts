@@ -31,6 +31,12 @@ export async function performFullAnalysis(
         return { analysis, correlation };
     } catch (error: any) {
         console.error("Error in performFullAnalysis:", error);
-        throw new Error(error.message || "Failed to perform full analysis. The AI model may be unavailable or experienced an issue. Please try again.");
+        if (error.message && (error.message.includes('503') || error.message.includes('overloaded'))) {
+            throw new Error("The AI service is temporarily overloaded. Please wait a moment and try your scan again.");
+        }
+        if (error.message && error.message.includes('429')) {
+             throw new Error("You've exceeded the usage quota for the AI service. Please check your plan details and try again later.");
+        }
+        throw new Error("Failed to perform full analysis. The AI model may be unavailable or experienced an issue. Please try again.");
     }
 }
