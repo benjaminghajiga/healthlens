@@ -138,8 +138,9 @@ export function HealthLensApp() {
         });
         return;
     }
-    setAppState('analyzing');
+    
     stopCamera();
+    setAppState('analyzing');
 
     try {
       const result = await performFullAnalysis(photoDataUri, values.scanDescription);
