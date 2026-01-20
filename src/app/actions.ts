@@ -30,7 +30,6 @@ export async function performFullAnalysis(
 
         return { analysis, correlation };
     } catch (error: any) {
-        console.error("Error in performFullAnalysis:", error);
         if (error.message && (error.message.includes('503') || error.message.includes('overloaded'))) {
             throw new Error("The AI service is temporarily overloaded. Please wait a moment and try your scan again.");
         }
