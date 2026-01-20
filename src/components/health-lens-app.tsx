@@ -76,7 +76,8 @@ export function HealthLensApp() {
     } catch (err) {
       console.error('Camera access denied:', err);
       setCameraPermissionError(true);
-      setIsStartingScan(false);
+    } finally {
+        setIsStartingScan(false);
     }
   };
 
@@ -141,13 +142,14 @@ export function HealthLensApp() {
     stopCamera();
     setAppState('analyzing');
 
-    try {
-      const result = await performFullAnalysis(photoDataUri, values.scanDescription);
-      setAnalysisResult(result);
+    const response = await performFullAnalysis(photoDataUri, values.scanDescription);
+
+    if (response.data) {
+      setAnalysisResult(response.data);
       setAppState('results');
-    } catch (e: any) {
-      console.error('Analysis failed:', e);
-      setError(e.message || 'An unknown error occurred during analysis.');
+    } else {
+      const errorMessage = response.error || 'An unknown error occurred during analysis.';
+      setError(errorMessage);
       setAppState('error');
     }
   };
@@ -177,8 +179,8 @@ export function HealthLensApp() {
             </CardHeader>
             <CardContent className="space-y-4">
               {cameraPermissionError && (
-                 <Alert>
-                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                 <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Camera Access Denied</AlertTitle>
                   <AlertDescription>
                     Camera access is required to perform a scan. Please enable camera permissions in your browser settings.
