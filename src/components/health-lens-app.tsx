@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Camera, ScanLine, FileWarning, RotateCcw, AlertTriangle, Loader2 } from 'lucide-react';
+import { Camera, ScanLine, RotateCcw, AlertTriangle, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -334,10 +333,10 @@ export function HealthLensApp() {
         return (
           <Card className="w-full max-w-md text-center">
             <CardHeader>
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                <FileWarning className="h-6 w-6 text-destructive" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+                <AlertTriangle className="h-6 w-6 text-amber-500" />
               </div>
-              <CardTitle>An Error Occurred</CardTitle>
+              <CardTitle>Analysis Failed</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">{error}</p>
