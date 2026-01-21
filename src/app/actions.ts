@@ -36,7 +36,7 @@ export async function performFullAnalysis(
         return { data: { analysis, correlation } };
     } catch (error: any) {
         if (error.message && (error.message.includes('API key') || error.message.toLowerCase().includes('permission denied'))) {
-            return { error: "The AI service is not configured correctly. Your deployed application is missing the `GEMINI_API_KEY` environment variable. Please add this to your hosting configuration." };
+            return { error: "The AI service is not configured. To fix this, add your Gemini API key as a secret in Firebase App Hosting. Go to your backend settings and add a new secret with the name `GEMINI_API_KEY`." };
         }
         if (error.message && (error.message.includes('503') || error.message.includes('overloaded'))) {
             return { error: "The AI service is temporarily overloaded. Please wait a moment and try your scan again." };
