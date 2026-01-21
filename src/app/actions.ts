@@ -35,6 +35,9 @@ export async function performFullAnalysis(
 
         return { data: { analysis, correlation } };
     } catch (error: any) {
+        if (error.message && (error.message.includes('API key') || error.message.toLowerCase().includes('permission denied'))) {
+            return { error: "The AI service is not configured correctly. Please ensure your API key is set up correctly in your deployment environment." };
+        }
         if (error.message && (error.message.includes('503') || error.message.includes('overloaded'))) {
             return { error: "The AI service is temporarily overloaded. Please wait a moment and try your scan again." };
         }
